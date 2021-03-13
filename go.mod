@@ -1,5 +1,8 @@
-module github.com/muesli/prism
+module github.com/FideTech/prism
 
 go 1.15
 
-require github.com/notedit/rtmp-lib v0.0.8
+require (
+	github.com/labstack/echo/v4 v4.2.1 // indirect
+	github.com/notedit/rtmp-lib v0.0.8
+)

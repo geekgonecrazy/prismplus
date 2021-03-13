@@ -1,20 +1,40 @@
-# prism
+# prism+
 
-[![Latest Release](https://img.shields.io/github/release/muesli/prism.svg)](https://github.com/muesli/prism/releases)
-[![Build Status](https://github.com/muesli/prism/workflows/build/badge.svg)](https://github.com/muesli/prism/actions)
-[![Go ReportCard](http://goreportcard.com/badge/muesli/prism)](http://goreportcard.com/report/muesli/prism)
-[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/muesli/prism)
+Based on prism but with api that allows you to dynamically add new sessions with session keys and dynamically add and remove destinations.
 
-An RTMP stream recaster / splitter
 
-## Usage
+## Create Session
+```
+curl -L -X POST 'http://localhost:5383/api/v1/sessions' \
+-H 'Content-Type: application/json' \
+--data-raw '{
+    "key": "abc1234"
+}'
+```
 
-Calling prism with one or multiple RTMP URLs will listen for an incoming RTMP
-connection, which will then get re-cast to all given URLs:
+You can now start streaming to localhost:1935/live/abc1234
 
-    prism URL [URL...]
+## Add Destination
+```
+curl -L -X POST 'http://localhost:5383/api/v1/sessions/abc1234/destinations' \
+-H 'Content-Type: application/json' \
+--data-raw '{
+    "url": "rtmp://broadcast.owncast.online/live/octempdemoazfdhw"
+}'
+```
 
-If you want prism to listen on a different port than the default 1935, call it
-with the `--bind` flag:
+You should then start to see the content streaming there
 
-    prism --bind :1337 ...
+## Remove Destination
+```
+curl -L -X DELETE 'http://localhost:5383/api/v1/sessions/abc1234/destinations/0'
+```
+
+It will stop playing at that destination
+
+## End Session
+```
+curl -L -X DELETE 'http://localhost:5383/api/v1/sessions/abc1234'
+```
+
+
