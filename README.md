@@ -7,12 +7,20 @@ Based on prism but with api that allows you to dynamically add new sessions with
 ```
 curl -L -X POST 'http://localhost:5383/api/v1/sessions' \
 -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer {token}' \
 --data-raw '{
     "key": "abc1234"
 }'
 ```
 
 You can now start streaming to localhost:1935/live/abc1234
+
+## Get Sessions
+```
+curl -L 'http://localhost:5383/api/v1/sessions' \
+-H 'Authorization: Bearer {token}'
+
+```
 
 ## Add Destination
 ```
@@ -24,6 +32,11 @@ curl -L -X POST 'http://localhost:5383/api/v1/sessions/abc1234/destinations' \
 ```
 
 You should then start to see the content streaming there
+
+## Get Destinations
+```
+curl -L -X POST 'http://localhost:5383/api/v1/sessions/abc1234/destinations'
+```
 
 ## Remove Destination
 ```
