@@ -17,6 +17,7 @@ func apiServer() {
 
 	router.Use(middleware.Logger())
 	router.Use(middleware.Recover())
+	router.Use(middleware.CORS())
 
 	router.GET("/api/v1/sessions", GetSessionsHandler)
 	router.POST("/api/v1/sessions", CreateSessionHandler)

@@ -1,0 +1,77 @@
+:root {
+  --bg-color: 50, 50, 50;
+  --fg-color: 230, 210, 240;
+  --prim-color: #74dd8f;
+}
+
+html, body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px;
+
+  background-color: rgb(var(--bg-color));
+  color: rgb(var(--fg-color));
+
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; */
+}
+
+a {
+  /* color: rgb(0,100,200); */
+
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:visited {
+  /* color: rgb(0,80,160); */
+
+  text-decoration: none;
+}
+
+label {
+  display: block;
+}
+
+input, button, select, textarea {
+  /* box-sizing: border-box; */
+  /* margin: 0 0 0.5em 0; */
+  /* padding: 0.4em; */
+  /* -webkit-padding: 0.4em 0; */
+
+  border: 1px solid var(--prim-color);
+  border-radius: 2px;
+
+  /* font-family: inherit; */
+  /* font-size: inherit; */
+}
+
+input:disabled {
+  color: #ccc;
+}
+
+button {
+  background-color: var(--prim-color);
+  color: #111;
+  /* outline: none; */
+}
+
+button:disabled {
+  color: #999;
+}
+
+button:not(:disabled):active {
+  background-color: #ddd;
+}
+
+button:focus {
+  border-color: #666;
+}
