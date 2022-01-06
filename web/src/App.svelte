@@ -9,8 +9,8 @@
 
   let session_key_type = "password";
 
-  let sessions: [];
-  let sessions_promise: Promise<void> = getSessions();
+  let sessions: [] = [];
+  let fetch_error = false;
 
   let new_urls: string[] = [""];
   let new_keys: string[] = [""];
@@ -96,11 +96,14 @@
       });
 
       await getSessions();
+
       new_session = default_session;
       new_urls = [""];
       new_keys = [""];
       show_keys = ["password"];
+      fetch_error = false;
     } catch (err) {
+      fetch_error = true;
       console.error(err);
     }
   }
@@ -118,7 +121,9 @@
       });
 
       await getSessions();
+      fetch_error = false;
     } catch (err) {
+      fetch_error = true;
       console.error(err);
     }
   }
@@ -142,7 +147,9 @@
       });
 
       await getSessions();
+      fetch_error = false;
     } catch (err) {
+      fetch_error = true;
       console.error(err);
     }
   }
@@ -160,17 +167,19 @@
       });
 
       await getSessions();
+      fetch_error = false;
     } catch (err) {
+      fetch_error = true;
       console.error(err);
     }
   }
 
   async function getSessions() {
-    const res = await fetch(
-      `${protocol}://${server_address}:${server_port}/${API_SESSIONS}`
-    );
+    try {
+      const res = await fetch(
+        `${protocol}://${server_address}:${server_port}/${API_SESSIONS}`
+      );
 
-    if (res.ok) {
       sessions = await res.json();
       let tmp_urls = [];
       let tmp_keys = [];
@@ -184,8 +193,16 @@
       new_remote_keys = tmp_keys;
       show_remote_session_keys = tmp_shows;
       show_remote_dest_keys = tmp_shows;
+      fetch_error = false;
+    } catch (err) {
+      fetch_error = true;
+      console.error(err);
     }
   }
+
+  onMount(async () => {
+    await getSessions();
+  });
 </script>
 
 <div id="main">
@@ -287,9 +304,7 @@
     <h2>Current Sessions</h2>
 
     <form>
-      {#await sessions_promise}
-        <p>Fetching session info...</p>
-      {:then}
+      {#if !fetch_error}
         {#each sessions as { key, destinations, nextDestinationId, active, end, streamHeaders }, i}
           <fieldset>
             <legend>Session {i}</legend>
@@ -376,9 +391,9 @@
             >
           </fieldset>
         {/each}
-      {:catch err}
-        <p style="color: red">{err.message}</p>
-      {/await}
+      {:else}
+        <p style="color: red">There was an error fetching resources.</p>
+      {/if}
     </form>
   </div>
 
