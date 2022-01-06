@@ -75,6 +75,10 @@
     show_keys = cp_show_keys;
   }
 
+  async function onChangeServerAddressOrPort() {
+    await getSessions();
+  }
+
   async function createSession() {
     const url = `${protocol}://${server_address}:${server_port}/${API_SESSIONS}`;
     for (let i = 0; i < new_urls.length; i++) {
@@ -197,6 +201,7 @@
         name="server-address"
         bind:value={server_address}
         placeholder="Server Address"
+        on:change={onChangeServerAddressOrPort}
       />
 
       <label for="server-port">Server Port</label>
@@ -206,6 +211,7 @@
         type="number"
         bind:value={server_port}
         placeholder="Server Port"
+        on:change={onChangeServerAddressOrPort}
       />
     </fieldset>
 
