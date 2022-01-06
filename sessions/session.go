@@ -29,9 +29,11 @@ type Session struct {
 }
 
 type Destination struct {
-	ID   int    `json:"id"`
-	URL  string `json:"url"`
-	RTMP *rtmp.RTMPConnection
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Server string `json:"server"`
+	Key    string `json:"key"`
+	RTMP   *rtmp.RTMPConnection
 }
 
 func (s *Session) AddDestination(destinationPayload models.Destination) error {
@@ -49,9 +51,11 @@ func (s *Session) AddDestination(destinationPayload models.Destination) error {
 	}
 
 	s.Destinations[destinationPayload.ID] = &Destination{
-		ID:   destinationPayload.ID,
-		URL:  url,
-		RTMP: conn,
+		ID:     destinationPayload.ID,
+		Name:   destinationPayload.Name,
+		Server: destinationPayload.Server,
+		Key:    destinationPayload.Key,
+		RTMP:   conn,
 	}
 
 	if s.Active {

@@ -44,8 +44,9 @@ func CreateStreamer(streamerPayload models.StreamerCreatePayload) (*models.Strea
 	}
 
 	streamer := models.Streamer{
-		Name:      streamerPayload.Name,
-		StreamKey: streamerPayload.StreamKey,
+		Name:         streamerPayload.Name,
+		StreamKey:    streamerPayload.StreamKey,
+		Destinations: []models.Destination{},
 
 		NextDestinationID: 1,
 	}
@@ -74,11 +75,21 @@ func UpdateStreamer(streamer models.Streamer) error {
 }
 
 func DeleteStreamer(id int) error {
-	if _, err := _dataStore.GetStreamerByID(id); err != nil {
+	streamer, err := _dataStore.GetStreamerByID(id)
+	if err != nil {
 		return err
 	}
 
 	if err := _dataStore.DeleteStreamer(id); err != nil {
+		return err
+	}
+
+	session, _ := sessions.GetSession(streamer.StreamKey)
+	if session == nil {
+		return nil
+	}
+
+	if err := sessions.DeleteSession(session.Key); err != nil {
 		return err
 	}
 

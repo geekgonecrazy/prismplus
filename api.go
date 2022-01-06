@@ -16,6 +16,12 @@ func apiServer() {
 	router.Use(middleware.Recover())
 	router.Use(middleware.CORS())
 
+	router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:  "web/public",
+		Index: "index.html",
+		HTML5: true,
+	}))
+
 	keyAuthConfig := middleware.KeyAuthConfig{KeyLookup: "header:Authorization", Validator: validateAdminKey}
 
 	router.GET("/api/v1/streamers", controllers.GetStreamersHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
