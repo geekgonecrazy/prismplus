@@ -320,7 +320,7 @@
                     on:click={() => removeRemoteDestination(key, id)}
                     >Remove</button
                   >
-                  <span>{url.split("/").slice(0, 1)}</span>
+                  <span>{url.split("/").slice(0, -1).join("/")}</span>
                 </li>
               {/each}
             </ul>
