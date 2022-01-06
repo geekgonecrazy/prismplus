@@ -1,13 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/FideTech/prism/sessions"
+	"github.com/geekgonecrazy/prismplus/sessions"
+	"github.com/geekgonecrazy/prismplus/streamers"
 	rtmp "github.com/notedit/rtmp-lib"
 )
 
@@ -17,8 +19,18 @@ func rtmpConnectionHandler(conn *rtmp.Conn) {
 
 	fmt.Println("Incoming rtmp connection", key)
 
+	// TODO: This could probably be more efficient
 	session, err := sessions.GetSession(key)
 	if err != nil {
+		if errors.Is(err, sessions.ErrNotFound) {
+			streamer, err := streamers.GetStreamerByStreamKey(key)
+			if err == nil {
+				session, _ = sessions.CreateSessionFromStreamer(streamer)
+			}
+		}
+	}
+
+	if session == nil {
 		conn.Close()
 		return
 	}
