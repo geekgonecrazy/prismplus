@@ -382,12 +382,10 @@
 
             <br />
 
-            <!-- Disabling this button until end session is useful -->
             <button
               class="button-negative"
               type="button"
-              on:click={() => endSession(key)}
-              disabled>End Session</button
+              on:click={() => endSession(key)}>End Session</button
             >
           </fieldset>
         {/each}
