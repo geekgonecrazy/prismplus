@@ -19,8 +19,10 @@ func apiServer() {
 	router.Use(middleware.Recover())
 	router.Use(middleware.CORS())
 
-	router.GET("/api/v1/sessions", GetSessionsHandler)
-	router.POST("/api/v1/sessions", CreateSessionHandler)
+	keyAuthConfig := middleware.KeyAuthConfig{KeyLookup: "header:Authorization", Validator: validateAdminKey}
+
+	router.GET("/api/v1/sessions", GetSessionsHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.POST("/api/v1/sessions", CreateSessionHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
 	router.GET("/api/v1/sessions/:session", GetSessionHandler)
 	router.POST("/api/v1/sessions/:session/destinations", AddDestinationHandler)
 	router.GET("/api/v1/sessions/:session/destinations", GetDestinationsHandler)
@@ -28,6 +30,14 @@ func apiServer() {
 	router.DELETE("/api/v1/sessions/:session", DeleteSessionHandler)
 
 	router.Logger.Fatal(router.Start(":5383"))
+}
+
+func validateAdminKey(key string, c echo.Context) (bool, error) {
+	if key == *adminKey {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func GetSessionsHandler(c echo.Context) error {
