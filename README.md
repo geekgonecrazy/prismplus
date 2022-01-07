@@ -1,5 +1,7 @@
 # prism+
 
+**Use at your own risk!  It has worked for us.. but very much alpha quality!**
+
 Based on [prism by muesli](https://github.com/muesli/prism).
 
 Prism+ lets you multicast your rtmp stream to multiple destinations.  You point your OBS at prism+ and then add your destinations to prism+.  It will relay your stream to the destinations. Allowing you to stream to multiple platforms at the same time.
