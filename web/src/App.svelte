@@ -2,17 +2,26 @@
   import { Router, Route } from "svelte-routing";
   import { onMount } from "svelte";
 
-  import Admin from './admin.svelte';
-  import Streamer from './streamer.svelte';
+  import Admin from "./admin.svelte";
+  import Streamer from "./streamer.svelte";
 
   export let url = "";
-
 </script>
+
 <div id="main">
-  <Router {url}>
-    <Route path="/" component={Streamer} />
-    <Route path="/admin" component={Admin} />
-  </Router>
+  <div id="content">
+    <Router {url}>
+      <Route path="/" component={Streamer} />
+      <Route path="/admin" component={Admin} />
+    </Router>
+  </div>
+
+  <footer>
+    Prism+ is free software. <a
+      href="https://github.com/geekgonecrazy/prismplus"
+      >Check out the source code.</a
+    >
+  </footer>
 </div>
 
 <style>
@@ -51,12 +60,27 @@
   fieldset {
     margin: 1em 0;
   }
+  footer {
+    position: absolute;
+    bottom: 0;
+    /* left: 0; */
+    right: 0;
+    /* width: 100vw; */
+    padding: 1em;
+
+    text-align: center;
+
+    background-color: rgba(255 255 255 200);
+  }
+  footer a {
+    color: #afa;
+  }
 
   .button-negative {
     background-color: #ff7777;
   }
 
-  #main {
+  #content {
     max-width: 320px;
     margin: 0 auto;
     padding: 1em;
@@ -79,7 +103,7 @@
   }
 
   @media (min-width: 640px) {
-    #main {
+    #content {
       max-width: 640px;
     }
   }
