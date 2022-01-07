@@ -61,14 +61,10 @@
     margin: 1em 0;
   }
   footer {
-    position: absolute;
-    bottom: 0;
-    /* left: 0; */
-    right: 0;
-    /* width: 100vw; */
+    flex-shrink: 0;
     padding: 1em;
 
-    text-align: center;
+    text-align: right;
 
     background-color: rgba(255 255 255 200);
   }
@@ -80,7 +76,15 @@
     background-color: #ff7777;
   }
 
+  #main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
   #content {
+    flex: 1 0 auto;
+
     max-width: 320px;
     margin: 0 auto;
     padding: 1em;
