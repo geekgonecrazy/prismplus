@@ -4,26 +4,21 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
-	"github.com/FideTech/prism/rtmp"
+	"github.com/geekgonecrazy/prismplus/models"
+	"github.com/geekgonecrazy/prismplus/rtmp"
 	"github.com/notedit/rtmp-lib/av"
 )
 
 var (
-	_sessions map[string]*Session
+	_sessions   map[string]*Session
+	ErrNotFound = errors.New("not found")
 )
 
-type SessionPayload struct {
-	Key          string               `json:"key"`
-	Destinations []DestinationPayload `json:"destinations"`
-}
-
-type DestinationPayload struct {
-	URL string `json:"url"`
-}
-
 type Session struct {
+	StreamerID        int                  `json:"streamerId"`
 	Key               string               `json:"key"`
 	Destinations      map[int]*Destination `json:"destinations"`
 	NextDestinationID int                  `json:"nextDestinationId"`
@@ -34,21 +29,34 @@ type Session struct {
 }
 
 type Destination struct {
-	ID   int    `json:"id"`
-	URL  string `json:"url"`
-	RTMP *rtmp.RTMPConnection
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Server string `json:"server"`
+	Key    string `json:"key"`
+	RTMP   *rtmp.RTMPConnection
 }
 
-func (s *Session) AddDestination(destinationPayload DestinationPayload) error {
-	conn := rtmp.NewRTMPConnection(destinationPayload.URL)
+func (s *Session) AddDestination(destinationPayload models.Destination) error {
 
-	s.Destinations[s.NextDestinationID] = &Destination{
-		ID:   s.NextDestinationID,
-		URL:  destinationPayload.URL,
-		RTMP: conn,
+	destinationPayload.Server = strings.TrimRight(destinationPayload.Server, "/")
+
+	url := fmt.Sprintf("%s/%s", destinationPayload.Server, destinationPayload.Key)
+
+	conn := rtmp.NewRTMPConnection(url)
+
+	// If streamerID is 0 then we need to track the IDs
+	if s.StreamerID == 0 {
+		destinationPayload.ID = s.NextDestinationID
+		s.NextDestinationID++
 	}
 
-	s.NextDestinationID++
+	s.Destinations[destinationPayload.ID] = &Destination{
+		ID:     destinationPayload.ID,
+		Name:   destinationPayload.Name,
+		Server: destinationPayload.Server,
+		Key:    destinationPayload.Key,
+		RTMP:   conn,
+	}
 
 	if s.Active {
 		if err := conn.WriteHeader(s.StreamHeaders); err != nil {
@@ -73,7 +81,7 @@ func (s *Session) GetDestinations() []Destination {
 
 func (s *Session) GetDestination(id int) (*Destination, error) {
 	if s.Destinations[id] == nil {
-		return nil, errors.New("Not Found")
+		return nil, ErrNotFound
 	}
 
 	return s.Destinations[id], nil
@@ -110,10 +118,10 @@ func InitializeSessionStore() {
 	_sessions = make(map[string]*Session)
 }
 
-func CreateSession(sessionPayload SessionPayload) error {
+func CreateSession(sessionPayload models.SessionPayload) error {
 
 	existingSession, err := GetSession(sessionPayload.Key)
-	if err != nil && err.Error() != "Not Found" {
+	if err != nil && err != ErrNotFound {
 		return err
 	}
 
@@ -122,6 +130,7 @@ func CreateSession(sessionPayload SessionPayload) error {
 	}
 
 	session := &Session{
+		StreamerID:        sessionPayload.StreamerID,
 		Key:               sessionPayload.Key,
 		Destinations:      map[int]*Destination{},
 		NextDestinationID: 0,
@@ -138,6 +147,22 @@ func CreateSession(sessionPayload SessionPayload) error {
 	return nil
 }
 
+func CreateSessionFromStreamer(streamer models.Streamer) (*Session, error) {
+	log.Println("Creating session from streamer", streamer.Name)
+
+	sessionPayload := models.SessionPayload{
+		StreamerID:   streamer.ID,
+		Key:          streamer.StreamKey,
+		Destinations: streamer.Destinations,
+	}
+
+	if err := CreateSession(sessionPayload); err != nil {
+		return nil, err
+	}
+
+	return GetSession(streamer.StreamKey)
+}
+
 func GetSessions() []Session {
 	sessions := []Session{}
 	for _, session := range _sessions {
@@ -149,7 +174,7 @@ func GetSessions() []Session {
 
 func GetSession(key string) (*Session, error) {
 	if _sessions[key] == nil {
-		return nil, errors.New("Not Found")
+		return nil, ErrNotFound
 	}
 
 	return _sessions[key], nil
@@ -157,7 +182,7 @@ func GetSession(key string) (*Session, error) {
 
 func DeleteSession(key string) error {
 	if _sessions[key] == nil {
-		return errors.New("Not Found")
+		return ErrNotFound
 	}
 
 	delete(_sessions, key)

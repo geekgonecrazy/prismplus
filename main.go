@@ -10,6 +10,7 @@ import (
 
 	// TODO: switch to joy5?
 
+	"github.com/geekgonecrazy/prismplus/helpers"
 	rtmp "github.com/notedit/rtmp-lib"
 )
 
@@ -22,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	if *adminKey == "" {
-		uuid, err := newUUID()
+		uuid, err := helpers.NewUUID()
 		if err != nil {
 			fmt.Println("Can't generate admin authorization key:", err)
 			os.Exit(1)

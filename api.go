@@ -1,11 +1,8 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"strconv"
-
-	"github.com/FideTech/prism/sessions"
+	"github.com/geekgonecrazy/prismplus/controllers"
+	"github.com/geekgonecrazy/prismplus/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -19,15 +16,31 @@ func apiServer() {
 	router.Use(middleware.Recover())
 	router.Use(middleware.CORS())
 
+	router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:  "web/public",
+		Index: "index.html",
+		HTML5: true,
+	}))
+
 	keyAuthConfig := middleware.KeyAuthConfig{KeyLookup: "header:Authorization", Validator: validateAdminKey}
 
-	router.GET("/api/v1/sessions", GetSessionsHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
-	router.POST("/api/v1/sessions", CreateSessionHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
-	router.GET("/api/v1/sessions/:session", GetSessionHandler)
-	router.POST("/api/v1/sessions/:session/destinations", AddDestinationHandler)
-	router.GET("/api/v1/sessions/:session/destinations", GetDestinationsHandler)
-	router.DELETE("/api/v1/sessions/:session/destinations/:destination", RemoveDestinationHandler)
-	router.DELETE("/api/v1/sessions/:session", DeleteSessionHandler)
+	router.GET("/api/v1/streamers", controllers.GetStreamersHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.POST("/api/v1/streamers", controllers.CreateStreamerHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.GET("/api/v1/streamers/:streamer", controllers.GetStreamerHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.DELETE("/api/v1/streamers/:streamer", controllers.DeleteStreamerHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+
+	router.GET("/api/v1/streamer", controllers.GetMyStreamerHandler)
+	router.GET("/api/v1/streamer/destinations", controllers.GetMyStreamerDestinationsHandler)
+	router.POST("/api/v1/streamer/destinations", controllers.CreateMyStreamerDestinationHandler)
+	router.DELETE("/api/v1/streamer/destinations/:destination", controllers.RemoveMyStreamerDestinationHandler)
+
+	router.GET("/api/v1/sessions", controllers.GetSessionsHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.POST("/api/v1/sessions", controllers.CreateSessionHandler, middleware.KeyAuthWithConfig(keyAuthConfig))
+	router.GET("/api/v1/sessions/:session", controllers.GetSessionHandler)
+	router.POST("/api/v1/sessions/:session/destinations", controllers.AddDestinationHandler)
+	router.GET("/api/v1/sessions/:session/destinations", controllers.GetDestinationsHandler)
+	router.DELETE("/api/v1/sessions/:session/destinations/:destination", controllers.RemoveDestinationHandler)
+	router.DELETE("/api/v1/sessions/:session", controllers.DeleteSessionHandler)
 
 	router.Logger.Fatal(router.Start(":5383"))
 }
@@ -38,130 +51,4 @@ func validateAdminKey(key string, c echo.Context) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func GetSessionsHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, sessions.GetSessions())
-}
-
-func CreateSessionHandler(c echo.Context) error {
-	sessionPayload := sessions.SessionPayload{}
-
-	if err := c.Bind(&sessionPayload); err != nil {
-		return err
-	}
-
-	if err := sessions.CreateSession(sessionPayload); err != nil {
-		if err.Error() == "Already Exists" {
-			return c.NoContent(http.StatusConflict)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	return c.JSON(http.StatusCreated, sessionPayload)
-}
-
-func GetSessionHandler(c echo.Context) error {
-	key := c.Param("session")
-
-	session, err := sessions.GetSession(key)
-	if err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	return c.JSON(http.StatusOK, session)
-}
-
-func GetDestinationsHandler(c echo.Context) error {
-	key := c.Param("session")
-
-	session, err := sessions.GetSession(key)
-	if err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	destinations := session.GetDestinations()
-
-	return c.JSON(http.StatusOK, destinations)
-}
-
-func AddDestinationHandler(c echo.Context) error {
-	key := c.Param("session")
-
-	session, err := sessions.GetSession(key)
-	if err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	destinationPayload := sessions.DestinationPayload{}
-
-	if err := c.Bind(&destinationPayload); err != nil {
-		return err
-	}
-
-	if err := session.AddDestination(destinationPayload); err != nil {
-		log.Println(err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	return c.NoContent(http.StatusCreated)
-}
-
-func RemoveDestinationHandler(c echo.Context) error {
-	key := c.Param("session")
-	destination := c.Param("destination")
-
-	id, err := strconv.Atoi(destination)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "Not Found")
-	}
-
-	session, err := sessions.GetSession(key)
-	if err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	if err := session.RemoveDestination(id); err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	return c.NoContent(http.StatusAccepted)
-}
-
-func DeleteSessionHandler(c echo.Context) error {
-	key := c.Param("session")
-
-	session, err := sessions.GetSession(key)
-	if err != nil {
-		if err.Error() == "Not Found" {
-			return c.NoContent(http.StatusNotFound)
-		}
-
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	session.EndSession()
-
-	return c.NoContent(http.StatusAccepted)
 }
