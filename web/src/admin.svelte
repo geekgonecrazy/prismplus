@@ -1,10 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  const default_error_message = "Something went wrong.";
+
   let admin_key: string = "";
 
   let connected: boolean = false;
   let fetch_error: boolean = false;
+  let err_message: string = default_error_message;
+
+  let show_admin_key = "password";
+  let show_new_streamer_key = "password";
 
   let show_session_keys: string[] = [];
   let show_streamer_keys: string[] = [];
@@ -17,7 +23,15 @@
     streamKey: "",
   };
 
-  let new_streamer: {} = default_streamer;
+  let new_streamer: {} = { ...default_streamer };
+
+  function showAdminKey(e) {
+    show_admin_key = e.target.checked ? "text" : "password";
+  }
+
+  function showNewStreamerKey(e) {
+    show_new_streamer_key = e.target.checked ? "text" : "password";
+  }
 
   function showSessionKey(e, i) {
     show_session_keys[i] = e.target.checked ? "text" : "password";
@@ -35,138 +49,147 @@
     return show_session_keys[i] || "password";
   };
 
+  async function onAdminKeyInput(e) {
+    admin_key = e.target.value;
+  }
+
+  async function onAdminKeyKeyDown(e) {
+    const enter_keycode = 13;
+    if (e.which === enter_keycode) {
+      e.preventDefault();
+      await connect();
+    }
+  }
+
+  async function onNewStreamerKeyInput(e) {
+    new_streamer.streamKey = e.target.value;
+  }
+
   async function connect() {
     await getSessions();
     await getStreamers();
   }
 
-  async function getSessions() {
+  /**
+   * Wrapper to provide error handling for fetch requests
+   */
+  async function fetchHelper(req) {
+    let res;
     try {
-      const res = await fetch(
-        `/api/v1/sessions`,
-        {
+      res = await req();
+    } catch (err) {
+      err_message = "Something went wrong fetching resources from the server.";
+      fetch_error = true;
+      console.error(err.message);
+    }
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        err_message = "Invalid Key.";
+      } else {
+        console.error(
+          `Fetch failed: ${res.url} - ${res.status}: ${res.statusText}`
+        );
+      }
+
+      fetch_error = true;
+      return null;
+    }
+
+    fetch_error = false;
+    return res;
+  }
+
+  /**
+   * Helper function to handle HTTP GET requests.
+   */
+  async function getResource(uri) {
+    const res = await fetchHelper(
+      () =>
+        fetch(uri, {
           headers: {
             Authorization: `Bearer ${admin_key}`,
           },
-        }
-      );
+        })
+    );
 
-      console.log(admin_key);
+    return res?.json();
+  }
 
-      sessions = await res.json();
-      connected = true;
+  /**
+   * Helper function to handle HTTP POST requests.
+   */
+  async function postResource(uri, data) {
+    const res = await fetchHelper(
+      () =>
+        fetch(uri, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            Authorization: `Bearer ${admin_key}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+    );
 
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    return res?.json();
+  }
+
+  /**
+   * Helper function to handle HTTP POST requests.
+   */
+  async function deleteResource(uri) {
+    const res = await fetchHelper(
+      () =>
+        fetch(uri, {
+          method: "DELETE",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            Authorization: `Bearer ${admin_key}`,
+            "Content-Type": "application/json",
+          },
+        })
+    );
+
+    return res;
+  }
+
+  async function getSessions() {
+    const data = await getResource(`/api/v1/sessions`);
+
+    sessions = data || [];
+    connected = data ? true : false;
   }
 
   async function getStreamers() {
-    try {
-      const res = await fetch(
-        `/api/v1/streamers`,
-        {
-          headers: {
-            Authorization: `Bearer ${admin_key}`,
-          },
-        }
-      );
+    const data = await getResource(`/api/v1/streamers`);
 
-      console.log(admin_key);
-
-      streamers = await res.json();
-
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    streamers = data || [];
   }
 
   async function createStreamer(key: string) {
-    const url = `/api/v1/streamers`;
-    try {
-      const promise = await fetch(url, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          Authorization: `Bearer ${admin_key}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(new_streamer),
-      });
+    await postResource(`/api/v1/streamers`, new_streamer);
+    await getStreamers();
 
-      await getStreamers();
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    new_streamer = { ...default_streamer };
   }
 
   async function removeStreamer(key: string) {
-    const url = `/api/v1/streamers/${key}`;
-    try {
-      const promise = await fetch(url, {
-        method: "DELETE",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          Authorization: `Bearer ${admin_key}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      await getStreamers();
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    await deleteResource(`/api/v1/streamers/${key}`);
+    await getStreamers();
   }
 
   async function removeRemoteDestination(key: string, dest_id: string) {
-    const url = `/api/v1/sessions/${key}/destinations/${dest_id}`;
-    try {
-      const promise = await fetch(url, {
-        method: "DELETE",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      await getSessions();
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    await deleteResource(`/api/v1/sessions/${key}/destinations/${dest_id}`);
+    await getSessions();
   }
 
   async function endSession(key: string) {
-    const url = `/api/v1/sessions/${key}`;
-    try {
-      const promise = await fetch(url, {
-        method: "DELETE",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          Authorization: `Bearer ${admin_key}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      await getSessions();
-      fetch_error = false;
-    } catch (err) {
-      fetch_error = true;
-      console.error(err);
-    }
+    await deleteResource(`/api/v1/sessions/${key}`);
+    await getSessions();
   }
 </script>
 
@@ -175,46 +198,66 @@
 
   <form>
     {#if !connected}
-    <fieldset>
-      <legend>Login to Admin</legend>
+      <fieldset>
+        <legend>Login to Admin</legend>
 
-      <label for="server-port">Admin Key</label>
-      <input
-        id="server-port"
-        name="server-port"
-        type="password"
-        bind:value={admin_key}
-        placeholder="Admin Key"
-      />
+        <label for="admin-key">Admin Key</label>
+        <input
+          id="admin-key"
+          name="admin-key"
+          type={show_admin_key}
+          value={admin_key}
+          on:input={onAdminKeyInput}
+          on:keydown={onAdminKeyKeyDown}
+          placeholder="Admin Key"
+        />
 
-      <button type="button" on:click={connect}> Connect </button>
-    </fieldset>
+        <label for="show-admin-key">Show key</label>
+        <input
+          id="show-admin-key"
+          name="show-admin-key"
+          type="checkbox"
+          on:change={showAdminKey}
+        />
 
+        <button type="button" on:click={connect}> Connect </button>
+      </fieldset>
     {:else}
-    <fieldset>
-      <legend>Create new Streamer</legend>
+      <fieldset>
+        <legend>Create new Streamer</legend>
 
-      <label for="new-streamer-name">Streamer Name</label>
-      <input
-        id="new-streamer-name"
-        name="new-streamer-name"
-        type="text"
-        bind:value={new_streamer.name}
-        placeholder="Name of Streamer"
-      />
+        <label for="new-streamer-name">Streamer Name</label>
+        <input
+          id="new-streamer-name"
+          name="new-streamer-name"
+          type="text"
+          bind:value={new_streamer.name}
+          placeholder="Name of Streamer"
+        />
 
-      <label for="new-streamer-key">Streamer Key</label>
-      <input
-        id="new-streamer-key"
-        name="new-streamer-key"
-        type="text"
-        bind:value={new_streamer.streamKey}
-        placeholder="Key for Streamer (blank will cause server to generate)"
-      />
-      <br />
+        <label for="new-streamer-key">Streamer Key</label>
+        <input
+          id="new-streamer-key"
+          name="new-streamer-key"
+          type={show_new_streamer_key}
+          value={new_streamer.streamKey}
+          on:input={onNewStreamerKeyInput}
+          placeholder="Key for Streamer (blank will cause server to generate)"
+        />
 
-      <button type="button" on:click={createStreamer}> Create Streamer </button>
-    </fieldset>
+        <label for="show-new-streamer-key">Show key</label>
+        <input
+          id="show-new-streamer-key"
+          name="show-new-streamer-key"
+          type="checkbox"
+          on:change={showNewStreamerKey}
+        />
+        <br />
+
+        <button type="button" on:click={createStreamer}>
+          Create Streamer
+        </button>
+      </fieldset>
     {/if}
   </form>
 
@@ -224,13 +267,14 @@
     <form>
       {#if !fetch_error}
         {#each streamers as { id, name, streamKey }, i}
+          <p>{id}</p>
           <fieldset>
             <legend>Streamer {i}</legend>
 
-            <label for="streamer-key-{i}">Streamer Name</label>
+            <label for="streamer-name-{i}">Streamer Name</label>
             <input
-              id="streamer-key-{i}"
-              name="streamer-key-{i}"
+              id="streamer-name-{i}"
+              name="streamer-name-{i}"
               type="text"
               value={name}
               readonly
@@ -244,10 +288,10 @@
               value={streamKey}
               readonly
             />
-            <label for="show-remote-session-key-{i}">Show key</label>
+            <label for="show-remote-streamer-key-{i}">Show key</label>
             <input
-              id="show-remote-session-key-{i}"
-              name="show-remote-session-key-{i}"
+              id="show-remote-streamer-key-{i}"
+              name="show-remote-streamer-key-{i}"
               type="checkbox"
               on:change={(e) => showStreamerKey(e, i)}
             />
@@ -261,8 +305,6 @@
             >
           </fieldset>
         {/each}
-      {:else}
-        <p style="color: red">There was an error fetching resources.</p>
       {/if}
     </form>
   </div>
@@ -318,7 +360,7 @@
           </fieldset>
         {/each}
       {:else}
-        <p style="color: red">There was an error fetching resources.</p>
+        <p style="color: red">{err_message}</p>
       {/if}
     </form>
   </div>
