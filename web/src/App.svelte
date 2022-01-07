@@ -108,6 +108,7 @@
 
   @media (min-width: 640px) {
     #content {
+      min-width: 400px;
       max-width: 640px;
     }
   }

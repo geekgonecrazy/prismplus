@@ -261,15 +261,15 @@
     {/if}
   </form>
 
+  {#if streamers.length > 0}
   <div id="current-streamers">
     <h2>Streamers</h2>
 
     <form>
       {#if !fetch_error}
         {#each streamers as { id, name, streamKey }, i}
-          <p>{id}</p>
           <fieldset>
-            <legend>Streamer {i}</legend>
+            <legend>Streamer ID: {id}</legend>
 
             <label for="streamer-name-{i}">Streamer Name</label>
             <input
@@ -308,7 +308,9 @@
       {/if}
     </form>
   </div>
+  {/if}
 
+  {#if sessions.length > 0}
   <div id="current-sessions">
     <h2>Current Sessions</h2>
 
@@ -364,6 +366,7 @@
       {/if}
     </form>
   </div>
+  {/if}
 </div>
 
 <style>
