@@ -11,7 +11,7 @@ import (
 	// TODO: switch to joy5?
 
 	"github.com/geekgonecrazy/prismplus/helpers"
-	rtmp "github.com/notedit/rtmp-lib"
+	rtmp "github.com/geekgonecrazy/rtmp-lib"
 )
 
 var (

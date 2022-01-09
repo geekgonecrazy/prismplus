@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	rtmp "github.com/notedit/rtmp-lib"
-	"github.com/notedit/rtmp-lib/av"
+	rtmp "github.com/geekgonecrazy/rtmp-lib"
+	"github.com/geekgonecrazy/rtmp-lib/av"
 )
 
 /*

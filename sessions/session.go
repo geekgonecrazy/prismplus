@@ -9,7 +9,7 @@ import (
 
 	"github.com/geekgonecrazy/prismplus/models"
 	"github.com/geekgonecrazy/prismplus/rtmp"
-	"github.com/notedit/rtmp-lib/av"
+	"github.com/geekgonecrazy/rtmp-lib/av"
 )
 
 var (

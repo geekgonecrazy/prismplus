@@ -10,7 +10,7 @@ import (
 
 	"github.com/geekgonecrazy/prismplus/sessions"
 	"github.com/geekgonecrazy/prismplus/streamers"
-	rtmp "github.com/notedit/rtmp-lib"
+	rtmp "github.com/geekgonecrazy/rtmp-lib"
 )
 
 func rtmpConnectionHandler(conn *rtmp.Conn) {
