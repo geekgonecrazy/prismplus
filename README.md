@@ -1,5 +1,7 @@
 # prism+
 
+![image](web/public/img/PrismPlus_PlatformColorsTrans_256x.png)
+
 **Use at your own risk!  It has worked for us.. but very much alpha quality!**
 
 Based on [prism by muesli](https://github.com/muesli/prism).
@@ -63,6 +65,3 @@ From here they can add their destinations
 ![image](https://user-images.githubusercontent.com/51996/148587000-6c6aa7a3-1361-48a0-9b81-5bc8495e49ae.png)
 
 Now the streamer just needs to point OBS (or their software of choice) to rtmp://localhost:5383/live with the streamKey.
-
-
-
