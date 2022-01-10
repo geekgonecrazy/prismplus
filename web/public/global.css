@@ -1,28 +1,65 @@
+@font-face {
+  font-family: Jura;
+  src: url(/fonts/jura/Jura-VariableFont_wght.ttf);
+}
+
 :root {
-  --bg-color: 50, 50, 50;
-  --fg-color: 230, 210, 240;
-  --prim-color: #74dd8f;
+  --bg-color:#323C46;
+  --bg-color-rgb: 50, 60, 70;
+  --fg-color: #B1FDF2;
+  --fg-color-rgb: 177, 253, 242;
+  --prim-color: #00EBFE;
+  --prim-color-rgb: 0, 235, 254;
+  --alt-color: #FEAF3E;
+  --alt-color-rgb: 254, 175, 62;
+  --acc-color: #2CFE00;
+  --acc-color-rgb: 44, 254, 0;
+  --neg-color: #ff7777;
+  --neg-color-rgb: 255, 119, 119;
+  --black: #111;
+  --black-rgb: 17, 17, 17;
+  --white: #eee;
+  --white-rgb: 238, 238, 238;
+  --grey-1: #666;
+  --grey-2: #999;
+  --grey-3: #ccc;
+  --grey-4: #ddd;
 }
 
 html, body {
   position: relative;
   width: 100%;
   height: 100%;
+
+  font-size: 16px;
 }
 
 body {
   box-sizing: border-box;
   margin: 0;
-  padding: 8px;
+  padding: 0;
 
-  background-color: rgb(var(--bg-color));
-  color: rgb(var(--fg-color));
+  background-color: var(--bg-color);
+  color: var(--fg-color);
 
-  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; */
+  font-family: Jura, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: initial;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  color: var(--prim-color);
+}
+h1 {
+  text-transform: uppercase;
 }
 
 a {
-  /* color: rgb(0,100,200); */
+  color: var(--acc-color);
 
   text-decoration: none;
 }
@@ -32,46 +69,76 @@ a:hover {
 }
 
 a:visited {
-  /* color: rgb(0,80,160); */
+  color: var(--prim-color);
 
-  text-decoration: none;
+  text-decoration: line-through;
+}
+
+ul {
+  list-style: none;
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+fieldset button {
+  align-self: center;
+}
+
+legend {
+  font-weight: bold;
+  color: var(--prim-color);
 }
 
 label {
   display: block;
+
+  margin: 0.5em;
 }
 
 input, button, select, textarea {
-  /* box-sizing: border-box; */
-  /* margin: 0 0 0.5em 0; */
-  /* padding: 0.4em; */
-  /* -webkit-padding: 0.4em 0; */
+  box-sizing: border-box;
+  margin: 0 0 0.5em 0;
+  padding: 0.4em;
+  -webkit-padding: 0.4em 0;
 
   border: 1px solid var(--prim-color);
   border-radius: 2px;
 
-  /* font-family: inherit; */
-  /* font-size: inherit; */
+  font-family: inherit;
+  font-size: inherit;
+
+  transition: background-color 0.25s border 0.25s;
+}
+
+input[type=checkbox] {
+  width: unset;
 }
 
 input:disabled {
-  color: #ccc;
+  color: var(--grey-3);
 }
 
 button {
   background-color: var(--prim-color);
-  color: #111;
-  /* outline: none; */
+  color: var(--black);
+  border: 1px solid var(--black);
+  outline: none;
 }
-
-button:disabled {
-  color: #999;
+button:hover {
+  background-color: rgba(var(--prim-color-rgb), 0.5);
 }
 
 button:not(:disabled):active {
-  background-color: #ddd;
+  background-color: var(--white);
+}
+
+button:disabled {
+  color: var(--grey-2);
 }
 
 button:focus {
-  border-color: #666;
+  border-color: var(--grey-4);
 }

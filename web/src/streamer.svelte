@@ -3,9 +3,10 @@
 
     const default_error_message = "Something went wrong.";
 
-    let stream_key: string = "";
+    let streamer_key: string = "";
 
     let streamer = {
+        name: "",
         destinations: [],
     };
 
@@ -14,6 +15,7 @@
     let fetch_error = false;
     let err_message = default_error_message;
 
+    let show_streamer_key = "password";
     let show_stream_key = "password";
     let show_new_destination_key = "password";
 
@@ -25,6 +27,10 @@
 
     let new_destination: {} = { ...default_destination };
 
+    function showStreamerKey(e) {
+        show_streamer_key = e.target.checked ? "text" : "password";
+    }
+
     function showStreamKey(e) {
         show_stream_key = e.target.checked ? "text" : "password";
     }
@@ -33,7 +39,11 @@
         show_new_destination_key = e.target.checked ? "text" : "password";
     }
 
-    async function onStreamKeyKeyDown(e) {
+    async function onStreamerKeyInput(e) {
+        streamer_key = e.target.value;
+    }
+
+    async function onStreamerKeyKeyDown(e) {
         const enter_keycode = 13;
         if (e.which === enter_keycode) {
             e.preventDefault();
@@ -87,7 +97,7 @@
         const res = await fetchHelper(() =>
             fetch(uri, {
                 headers: {
-                    Authorization: `Bearer ${stream_key}`,
+                    Authorization: `Bearer ${streamer_key}`,
                 },
             })
         );
@@ -105,7 +115,7 @@
                 mode: "cors",
                 cache: "no-cache",
                 headers: {
-                    Authorization: `Bearer ${stream_key}`,
+                    Authorization: `Bearer ${streamer_key}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data),
@@ -125,7 +135,7 @@
                 mode: "cors",
                 cache: "no-cache",
                 headers: {
-                    Authorization: `Bearer ${stream_key}`,
+                    Authorization: `Bearer ${streamer_key}`,
                     "Content-Type": "application/json",
                 },
             })
@@ -152,34 +162,47 @@
     }
 
     onMount(async () => {
-        // if we store the stream_key some how in session.. then we could probably add this back
+        // if we store the streamer_key some how in session.. then we could probably add this back
         //await getStreamer();
     });
 </script>
 
-<div id="main">
-    <h1>Prism+</h1>
-
+<div id="streamer">
     {#if !connected}
         <form>
             <fieldset>
                 <legend>Login as Streamer</legend>
-                <label for="login-streamer-key">Stream Key</label>
+
+                <label for="login-streamer-key">Streamer Key</label>
                 <input
                     id="login-streamer-key"
                     name="login-streamer-key"
-                    type="password"
-                    bind:value={stream_key}
-                    on:keydown={onStreamKeyKeyDown}
-                    placeholder="Stream Key"
+                    type={show_streamer_key}
+                    value={streamer_key}
+                    on:keydown={onStreamerKeyKeyDown}
+                    on:input={onStreamerKeyInput}
+                    placeholder="Streamer Key"
                 />
+
+                <div class="oneline">
+                    <label for="show-admin-key">Show key</label>
+                    <input
+                        id="show-admin-key"
+                        name="show-admin-key"
+                        type="checkbox"
+                        on:change={showStreamerKey}
+                    />
+                </div>
 
                 <button type="button" on:click={connect}> Connect </button>
             </fieldset>
         </form>
     {:else}
         <div id="current-sessions">
-            <h2>Stream Config</h2>
+            <header>
+                <h1>Stream Config</h1>
+                <h2 id="streamer-name">{streamer.name}</h2>
+            </header>
 
             <form>
                 {#if !fetch_error}
@@ -194,13 +217,16 @@
                             value={streamer.streamKey}
                             readonly
                         />
-                        <label for="show-streamer-key">Show key</label>
-                        <input
-                            id="show-streamer-key"
-                            name="show-streamer-key"
-                            type="checkbox"
-                            on:change={showStreamKey}
-                        />
+
+                        <div class="oneline">
+                            <label for="show-streamer-key">Show key</label>
+                            <input
+                                id="show-streamer-key"
+                                name="show-streamer-key"
+                                type="checkbox"
+                                on:change={showStreamKey}
+                            />
+                        </div>
 
                         <h3>Destinations</h3>
                         <ul>
@@ -212,17 +238,16 @@
                                         on:click={() => removeDestination(id)}
                                         >Remove</button
                                     >
-                                    <span>{name} - {server}</span>
+                                    <span class="destination-entry">{name} - {server}</span>
                                 </li>
                             {/each}
                         </ul>
-
-                        <br />
 
                         <label for="new-destination-name"
                             >New Remote Destination Name</label
                         >
                         <input
+                            class="destination-name"
                             id="new-destination-name"
                             name="new-destination-name"
                             bind:value={new_destination.name}
@@ -233,6 +258,7 @@
                             >New Remote Destination Server</label
                         >
                         <input
+                            class="destination-server"
                             id="new-destination-server"
                             name="new-destination-server"
                             bind:value={new_destination.server}
@@ -251,13 +277,17 @@
                             placeholder="Destination Key"
                         />
 
-                        <label for="show-new-destination-key">Show key</label>
-                        <input
-                            id="show-new-destination-key"
-                            name="show-new-destination-key"
-                            type="checkbox"
-                            on:change={showNewDestinationKey}
-                        />
+                        <div class="oneline">
+                            <label for="show-new-destination-key"
+                                >Show key</label
+                            >
+                            <input
+                                id="show-new-destination-key"
+                                name="show-new-destination-key"
+                                type="checkbox"
+                                on:change={showNewDestinationKey}
+                            />
+                        </div>
 
                         <button type="button" on:click={() => addDestination()}
                             >Add Remote Destination</button
@@ -274,71 +304,30 @@
 </div>
 
 <style>
-    h1 {
-        color: var(--prim-color);
-
-        text-transform: uppercase;
-        font-size: 4em;
-        font-weight: 100;
-    }
-    h2 {
-        color: var(--prim-color);
-
-        font-size: 1.5em;
-    }
-    h3 {
-        color: var(--prim-color);
-
-        font-size: 1.25em;
-    }
-
-    button {
-        margin: 1em 0;
-    }
-    label {
-        margin: 0.5em;
-    }
-    input {
-        width: 100%;
-    }
-    input:read-only {
-        background-color: rgba(0, 0, 0, 0);
-        border: none;
-        color: rgb(var(--fg-light));
-    }
-    fieldset {
-        margin: 1em 0;
-    }
-
-    .button-negative {
-        background-color: #ff7777;
-    }
-
-    #main {
-        max-width: 320px;
-        margin: 0 auto;
-        padding: 1em;
-
+    header {
         text-align: center;
     }
 
-    #current-sessions ul {
-        margin: auto;
-        width: calc(100% / 2);
-        text-align: left;
-    }
-    #current-sessions ul {
-        list-style-type: none;
-    }
-    #current-sessions li > span,
-    #current-sessions li > button {
-        display: inline-block;
-        margin: 0.25em;
+    ul {
+        padding-left: 0;
     }
 
-    @media (min-width: 640px) {
-        #main {
-            max-width: 640px;
-        }
+    .destination-name {
+        width: 100%;
+        max-width: 320px;
+    }
+    .destination-server {
+        width: 100%;
+        max-width: 640px;
+    }
+
+    .destination-entry {
+        color: var(--white);
+    }
+
+    #streamer-name {
+        font-size: 1.25em;
+        font-weight: bold;
+        color: var(--alt-color);
     }
 </style>
