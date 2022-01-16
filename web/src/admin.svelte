@@ -229,7 +229,7 @@
 
         <label for="new-streamer-name">Streamer Name</label>
         <input
-          class="streamer-name"
+          class="streamer-name-input"
           id="new-streamer-name"
           name="new-streamer-name"
           type="text"
