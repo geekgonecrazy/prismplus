@@ -104,13 +104,12 @@
    * Helper function to handle HTTP GET requests.
    */
   async function getResource(uri) {
-    const res = await fetchHelper(
-      () =>
-        fetch(uri, {
-          headers: {
-            Authorization: `Bearer ${admin_key}`,
-          },
-        })
+    const res = await fetchHelper(() =>
+      fetch(uri, {
+        headers: {
+          Authorization: `Bearer ${admin_key}`,
+        },
+      })
     );
 
     return res?.json();
@@ -120,18 +119,17 @@
    * Helper function to handle HTTP POST requests.
    */
   async function postResource(uri, data) {
-    const res = await fetchHelper(
-      () =>
-        fetch(uri, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: {
-            Authorization: `Bearer ${admin_key}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        })
+    const res = await fetchHelper(() =>
+      fetch(uri, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        headers: {
+          Authorization: `Bearer ${admin_key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
     );
 
     return res?.json();
@@ -141,17 +139,16 @@
    * Helper function to handle HTTP POST requests.
    */
   async function deleteResource(uri) {
-    const res = await fetchHelper(
-      () =>
-        fetch(uri, {
-          method: "DELETE",
-          mode: "cors",
-          cache: "no-cache",
-          headers: {
-            Authorization: `Bearer ${admin_key}`,
-            "Content-Type": "application/json",
-          },
-        })
+    const res = await fetchHelper(() =>
+      fetch(uri, {
+        method: "DELETE",
+        mode: "cors",
+        cache: "no-cache",
+        headers: {
+          Authorization: `Bearer ${admin_key}`,
+          "Content-Type": "application/json",
+        },
+      })
     );
 
     return res;
@@ -193,9 +190,7 @@
   }
 </script>
 
-<div id="main">
-  <h1>Prism+</h1>
-
+<div id="admin">
   <form>
     {#if !connected}
       <fieldset>
@@ -212,22 +207,29 @@
           placeholder="Admin Key"
         />
 
-        <label for="show-admin-key">Show key</label>
-        <input
-          id="show-admin-key"
-          name="show-admin-key"
-          type="checkbox"
-          on:change={showAdminKey}
-        />
+        <div class="oneline">
+          <label class="showkey-label" for="show-admin-key">Show key</label>
+          <input
+            id="show-admin-key"
+            name="show-admin-key"
+            type="checkbox"
+            on:change={showAdminKey}
+          />
+        </div>
 
         <button type="button" on:click={connect}> Connect </button>
       </fieldset>
     {:else}
+      <header>
+        <h1>Admin Config</h1>
+      </header>
+
       <fieldset>
         <legend>Create new Streamer</legend>
 
         <label for="new-streamer-name">Streamer Name</label>
         <input
+          class="streamer-name-input"
           id="new-streamer-name"
           name="new-streamer-name"
           type="text"
@@ -245,14 +247,15 @@
           placeholder="Key for Streamer (blank will cause server to generate)"
         />
 
-        <label for="show-new-streamer-key">Show key</label>
-        <input
-          id="show-new-streamer-key"
-          name="show-new-streamer-key"
-          type="checkbox"
-          on:change={showNewStreamerKey}
-        />
-        <br />
+        <div class="oneline">
+          <label for="show-new-streamer-key">Show key</label>
+          <input
+            id="show-new-streamer-key"
+            name="show-new-streamer-key"
+            type="checkbox"
+            on:change={showNewStreamerKey}
+          />
+        </div>
 
         <button type="button" on:click={createStreamer}>
           Create Streamer
@@ -262,179 +265,118 @@
   </form>
 
   {#if streamers.length > 0}
-  <div id="current-streamers">
-    <h2>Streamers</h2>
+    <div id="current-streamers">
+      <h2>Streamers</h2>
 
-    <form>
-      {#if !fetch_error}
-        {#each streamers as { id, name, streamKey }, i}
-          <fieldset>
-            <legend>Streamer ID: {id}</legend>
+      <form>
+        {#if !fetch_error}
+          {#each streamers as { id, name, streamKey }, i}
+            <fieldset>
+              <legend>Streamer ID: {id}</legend>
 
-            <label for="streamer-name-{i}">Streamer Name</label>
-            <input
-              id="streamer-name-{i}"
-              name="streamer-name-{i}"
-              type="text"
-              value={name}
-              readonly
-            />
+              <label for="streamer-name-{i}">Streamer Name</label>
+              <input
+                class="streamer-name"
+                id="streamer-name-{i}"
+                name="streamer-name-{i}"
+                type="text"
+                value={name}
+                readonly
+              />
 
-            <label for="streamer-key-{i}">Streamer Key</label>
-            <input
-              id="streamer-key-{i}"
-              name="streamer-key-{i}"
-              type={getStreamerKeyVisibility(i)}
-              value={streamKey}
-              readonly
-            />
-            <label for="show-remote-streamer-key-{i}">Show key</label>
-            <input
-              id="show-remote-streamer-key-{i}"
-              name="show-remote-streamer-key-{i}"
-              type="checkbox"
-              on:change={(e) => showStreamerKey(e, i)}
-            />
+              <label for="streamer-key-{i}">Streamer Key</label>
+              <input
+                id="streamer-key-{i}"
+                name="streamer-key-{i}"
+                type={getStreamerKeyVisibility(i)}
+                value={streamKey}
+                readonly
+              />
 
-            <br />
+              <div class="oneline">
+                <label for="show-remote-streamer-key-{i}">Show key</label>
+                <input
+                  id="show-remote-streamer-key-{i}"
+                  name="show-remote-streamer-key-{i}"
+                  type="checkbox"
+                  on:change={(e) => showStreamerKey(e, i)}
+                />
+              </div>
 
-            <button
-              class="button-negative"
-              type="button"
-              on:click={() => removeStreamer(id)}>Remove Streamer</button
-            >
-          </fieldset>
-        {/each}
-      {/if}
-    </form>
-  </div>
+              <button
+                class="button-negative"
+                type="button"
+                on:click={() => removeStreamer(id)}>Remove Streamer</button
+              >
+            </fieldset>
+          {/each}
+        {/if}
+      </form>
+    </div>
   {/if}
 
   {#if sessions.length > 0}
-  <div id="current-sessions">
-    <h2>Current Sessions</h2>
+    <div id="current-sessions">
+      <h2>Current Sessions</h2>
 
-    <form>
-      {#if !fetch_error}
-        {#each sessions as { key, destinations, nextDestinationId, active, end, streamHeaders }, i}
-          <fieldset>
-            <legend>Session {i}</legend>
+      <form>
+        {#if !fetch_error}
+          {#each sessions as { key, destinations, nextDestinationId, active, end, streamHeaders }, i}
+            <fieldset>
+              <legend>Session {i}</legend>
 
-            <label for="session-key-{i}">Session Key</label>
-            <input
-              id="session-key-{i}"
-              name="session-key-{i}"
-              type={getSessionKeyVisibility(i)}
-              value={key}
-              readonly
-            />
-            <label for="show-remote-session-key-{i}">Show key</label>
-            <input
-              id="show-remote-session-key-{i}"
-              name="show-remote-session-key-{i}"
-              type="checkbox"
-              on:change={(e) => showSessionKey(e, i)}
-            />
+              <label for="session-key-{i}">Session Key</label>
+              <input
+                id="session-key-{i}"
+                name="session-key-{i}"
+                type={getSessionKeyVisibility(i)}
+                value={key}
+                readonly
+              />
+              <label for="show-remote-session-key-{i}">Show key</label>
+              <input
+                id="show-remote-session-key-{i}"
+                name="show-remote-session-key-{i}"
+                type="checkbox"
+                on:change={(e) => showSessionKey(e, i)}
+              />
 
-            <h3>Destinations</h3>
-            <ul>
-              {#each Object.entries(destinations) as [_, { name, server, id }]}
-                <li>
-                  <button
-                    class="button-negative"
-                    type="button"
-                    on:click={() => removeRemoteDestination(key, id)}
-                    >Remove</button
-                  >
-                  <span>{name} - {server}</span>
-                </li>
-              {/each}
-            </ul>
+              <h3>Destinations</h3>
+              <ul>
+                {#each Object.entries(destinations) as [_, { name, server, id }]}
+                  <li>
+                    <button
+                      class="button-negative"
+                      type="button"
+                      on:click={() => removeRemoteDestination(key, id)}
+                      >Remove</button
+                    >
+                    <span>{name} - {server}</span>
+                  </li>
+                {/each}
+              </ul>
 
-            <br />
-            <br />
-
-            <button
-              class="button-negative"
-              type="button"
-              on:click={() => endSession(key)}>End Session</button
-            >
-          </fieldset>
-        {/each}
-      {:else}
-        <p style="color: red">{err_message}</p>
-      {/if}
-    </form>
-  </div>
+              <button
+                class="button-negative"
+                type="button"
+                on:click={() => endSession(key)}>End Session</button
+              >
+            </fieldset>
+          {/each}
+        {:else}
+          <p style="color: red">{err_message}</p>
+        {/if}
+      </form>
+    </div>
   {/if}
 </div>
 
 <style>
-  h1 {
-    color: var(--prim-color);
-
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
-  }
-  h2 {
-    color: var(--prim-color);
-
-    font-size: 1.5em;
-  }
-  h3 {
-    color: var(--prim-color);
-
-    font-size: 1.25em;
-  }
-
-  button {
-    margin: 1em 0;
-  }
-  label {
-    margin: 0.5em;
-  }
-  input {
+  .streamer-name {
     width: 100%;
-  }
-  input:read-only {
-    background-color: rgba(0, 0, 0, 0);
-    border: none;
-    color: rgb(var(--fg-light));
-  }
-  fieldset {
-    margin: 1em 0;
-  }
-
-  .button-negative {
-    background-color: #ff7777;
-  }
-
-  #main {
     max-width: 320px;
-    margin: 0 auto;
-    padding: 1em;
 
-    text-align: center;
-  }
-
-  #current-sessions ul {
-    margin: auto;
-    width: calc(100% / 2);
-    text-align: left;
-  }
-  #current-sessions ul {
-    list-style-type: none;
-  }
-  #current-sessions li > span,
-  #current-sessions li > button {
-    display: inline-block;
-    margin: 0.25em;
-  }
-
-  @media (min-width: 640px) {
-    #main {
-      max-width: 640px;
-    }
+    color: var(--alt-color);
+    font-size: 1.25rem;
   }
 </style>
