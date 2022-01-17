@@ -13,6 +13,11 @@ Prism+ main Features:
 * Ability to add streamers with their streamkeys
 * Ability for streamers to login and add/remove destinations
 
+#### Verified working Destinations
+* Owncast
+* Twitch
+* Youtube - only seems to work with variable bitrate setting in OBS.  Your results may vary
+
 ## Starting prism+
 
 1. Clone the repo locally and enter the folder
