@@ -11,12 +11,14 @@ import (
 	// TODO: switch to joy5?
 
 	"github.com/geekgonecrazy/prismplus/helpers"
+	"github.com/geekgonecrazy/prismplus/streamers"
 	rtmp "github.com/geekgonecrazy/rtmp-lib"
 )
 
 var (
 	bind     = flag.String("bind", ":1935", "bind address")
 	adminKey = flag.String("adminKey", "", "Admin key.  If none passed one will be created")
+	dataPath = flag.String("dataPath", "", "Path for data")
 )
 
 func main() {
@@ -33,6 +35,8 @@ func main() {
 
 		log.Println("Admin Authorization Key Generated:", *adminKey)
 	}
+
+	streamers.Setup(*dataPath)
 
 	fmt.Println("Starting RTMP server...")
 	config := &rtmp.Config{

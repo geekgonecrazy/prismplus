@@ -18,8 +18,8 @@ var (
 )
 
 //New creates a new bolt store
-func New() (store.Store, error) {
-	db, err := bolt.Open(fmt.Sprintf("./%s", "data.bbolt"), 0600, &bolt.Options{Timeout: 15 * time.Second})
+func New(dataPath string) (store.Store, error) {
+	db, err := bolt.Open(fmt.Sprintf("%s%s", dataPath, "data.bbolt"), 0600, &bolt.Options{Timeout: 15 * time.Second})
 	if err != nil {
 		return nil, err
 	}

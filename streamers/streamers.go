@@ -13,8 +13,12 @@ import (
 
 var _dataStore store.Store
 
-func init() {
-	store, err := boltstore.New()
+func Setup(dataPath string) {
+	if dataPath == "" {
+		dataPath = "./"
+	}
+
+	store, err := boltstore.New(dataPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
