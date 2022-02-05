@@ -67,4 +67,4 @@ From here they can add their destinations
 
 ![image](screenshots/streamer_medium.png)
 
-Now the streamer just needs to point OBS (or their software of choice) to rtmp://localhost:5383/live with the streamKey.
+Now the streamer just needs to point OBS (or their software of choice) to rtmp://localhost:1935/live with the streamKey.
