@@ -155,6 +155,7 @@ func CreateSessionFromStreamer(streamer models.Streamer) (*Session, error) {
 		StreamerID:   streamer.ID,
 		Key:          streamer.StreamKey,
 		Destinations: streamer.Destinations,
+		Delay:        streamer.Delay,
 	}
 
 	if err := CreateSession(sessionPayload); err != nil {
