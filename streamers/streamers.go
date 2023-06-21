@@ -51,6 +51,7 @@ func CreateStreamer(streamerPayload models.StreamerCreatePayload) (*models.Strea
 		Name:         streamerPayload.Name,
 		StreamKey:    streamerPayload.StreamKey,
 		Destinations: []models.Destination{},
+		Delay:        streamerPayload.Delay,
 
 		NextDestinationID: 1,
 	}
