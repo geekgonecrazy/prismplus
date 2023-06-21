@@ -21,6 +21,7 @@ type Session struct {
 	StreamerID        int                  `json:"streamerId"`
 	Key               string               `json:"key"`
 	Destinations      map[int]*Destination `json:"destinations"`
+	Delay             int                  `json:"delay"`
 	NextDestinationID int                  `json:"nextDestinationId"`
 	Active            bool                 `json:"active"`
 	End               bool                 `json:"end"`
