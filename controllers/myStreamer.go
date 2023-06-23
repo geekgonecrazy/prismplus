@@ -51,7 +51,7 @@ func GetMyStreamerHandler(c echo.Context) error {
 
 	session, _ := sessions.GetSession(streamKey)
 
-	if session != nil && session.Active {
+	if session != nil && session.Running {
 		myStreamer.Live = true
 	}
 

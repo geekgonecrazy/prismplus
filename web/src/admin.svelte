@@ -21,9 +21,10 @@
   const default_streamer = {
     name: "",
     streamKey: "",
+    delay: 0,
   };
 
-  let new_streamer: {} = { ...default_streamer };
+  let new_streamer: typeof default_streamer = { ...default_streamer };
 
   function showAdminKey(e) {
     show_admin_key = e.target.checked ? "text" : "password";
@@ -167,7 +168,7 @@
     streamers = data || [];
   }
 
-  async function createStreamer(key: string) {
+  async function createStreamer() {
     await postResource(`/api/v1/streamers`, new_streamer);
     await getStreamers();
 
@@ -257,6 +258,19 @@
           />
         </div>
 
+        <label for="new-streamer-delay">Stream Delay</label>
+        <input
+          class="streamer-delay-input"
+          id="new-streamer-delay"
+          name="new-streamer-delay"
+          type="number"
+          min="0"
+          step="1"
+          max="120"
+          bind:value={new_streamer.delay}
+          placeholder="Stream Delay"
+        />
+
         <button type="button" on:click={createStreamer}>
           Create Streamer
         </button>
@@ -270,7 +284,7 @@
 
       <form>
         {#if !fetch_error}
-          {#each streamers as { id, name, streamKey }, i}
+          {#each streamers as { id, name, streamKey, delay }, i}
             <fieldset>
               <legend>Streamer ID: {id}</legend>
 
@@ -302,6 +316,16 @@
                   on:change={(e) => showStreamerKey(e, i)}
                 />
               </div>
+
+              <label for="streamer-delay-{i}">Stream Delay</label>
+              <input
+                class="streamer-delay-{i}"
+                id="streamer-delay-{i}"
+                name="streamer-delay-{i}"
+                type="number"
+                value={delay}
+                readonly
+              />
 
               <button
                 class="button-negative"

@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/geekgonecrazy/prismplus/sessions"
 	"github.com/geekgonecrazy/prismplus/streamers"
@@ -41,62 +40,35 @@ func rtmpConnectionHandler(conn *rtmp.Conn) {
 		os.Exit(1)
 	}
 
-	// Mark session as active and stash headers for replay on new destinations
-	session.ChangeState(true) // Mark active
+	packet, err := conn.ReadPacket()
+	if err != nil {
+		fmt.Println("can't read packet:", err)
+	}
+
+	session.SetBufferSize(packet)
+
+	// stash headers for replay on new destinations
 	session.SetHeaders(streams)
+
+	go session.Run()
 
 	log.Println("RTMP connection now active for session", key)
 
-	for _, destination := range session.Destinations {
-		if err := destination.RTMP.WriteHeader(streams); err != nil {
-			fmt.Println("can't write header to destination stream:", err)
-			// os.Exit(1)
-		}
-		go destination.RTMP.Loop()
-	}
-
-	lastTime := time.Now()
 	for {
-		if session.End {
-			fmt.Printf("Ending session %s\n", key)
-			break
-		}
-
 		packet, err := conn.ReadPacket()
 		if err != nil {
 			fmt.Println("can't read packet:", err)
 			break
 		}
 
-		if time.Since(lastTime) > time.Second {
-			fmt.Println("Duration:", packet.Time)
-			lastTime = time.Now()
-		}
-
-		for _, destination := range session.Destinations {
-			destination.RTMP.WritePacket(packet)
-		}
+		session.RelayPacket(packet)
 	}
 
-	session.ChangeState(false) // Mark inactive
+	session.StreamDisconnected()
+	log.Println("Not processing any more.  RTMP relaying stopped")
 
-	for _, destination := range session.Destinations {
-		err := destination.RTMP.Disconnect()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}
-
-	if session.End {
-		fmt.Printf("Session %s ended\n", key)
-		// Make sure we are closed
-		if err := conn.Close(); err != nil {
-			log.Println(err)
-		}
-
-		if err := sessions.DeleteSession(key); err != nil {
-			log.Println(err)
-		}
+	// Make sure we are closed
+	if err := conn.Close(); err != nil {
+		log.Println(err)
 	}
 }

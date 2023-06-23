@@ -30,7 +30,7 @@ npm install
 npm run build
 ```
 
-3. Build backend.  The backend is written in golang.
+3. Build backend (ensure you are in the project's root directory: `cd ..`).  The backend is written in golang
 
 ```
 go get

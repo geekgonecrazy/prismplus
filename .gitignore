@@ -15,6 +15,7 @@
 vendor/
 
 prism
+prismplus
 dist/
 .envrc
 data.bbolt

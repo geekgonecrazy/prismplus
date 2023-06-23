@@ -5,12 +5,14 @@ import "time"
 type StreamerCreatePayload struct {
 	Name      string `json:"name"`
 	StreamKey string `json:"streamKey"`
+	Delay     int    `json:"delay"`
 }
 
 type Streamer struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	StreamKey string `json:"streamKey"`
+	Delay     int    `json:"delay"`
 
 	NextDestinationID int           `json:"nextDestinationId"`
 	Destinations      []Destination `json:"destinations"`
